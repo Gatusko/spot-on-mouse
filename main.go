@@ -224,13 +224,13 @@ func main() {
 	for {
 		// GetMessage fills m in: Win32 returns data through out-parameters, so
 		// we own the struct and hand Windows its address.
-		ret, _, callErr := procGetMessage.Call(uintptr(unsafe.Pointer(&m)), 0, 0, 0)
+		ret, _, callErrInner := procGetMessage.Call(uintptr(unsafe.Pointer(&m)), 0, 0, 0)
 
 		// BOOL is a signed int32, but Call gives back an unsigned 64-bit
 		// uintptr, so -1 arrives as 0x00000000FFFFFFFF. Truncating to int32
 		// reinterprets it as the -1 Windows meant.
 		if int32(ret) == -1 {
-			log.Fatalf("GetMessageW: %v", callErr)
+			log.Fatalf("GetMessageW: %v", callErrInner)
 		}
 		if ret == 0 { // WM_QUIT
 			break
