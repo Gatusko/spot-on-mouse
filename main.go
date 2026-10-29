@@ -7,136 +7,6 @@ import (
 	"unsafe"
 )
 
-// Win32 entry points. Resolved lazily on first call, so nothing happens at init.
-//
-// Every Win32 function has a doc page at a predictable URL:
-//
-//	learn.microsoft.com/en-us/windows/win32/api/<header>/nf-<header>-<funcname>
-//
-// Structs use ns- instead of nf-. Each page lists its header and the constants
-// that go with it under "Requirements".
-var (
-	user32 = syscall.NewLazyDLL("user32.dll")
-
-	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclassexw
-	procRegisterClassEx = user32.NewProc("RegisterClassExW")
-
-	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-	procCreateWindowEx = user32.NewProc("CreateWindowExW")
-
-	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-defwindowprocw
-	procDefWindowProc = user32.NewProc("DefWindowProcW")
-
-	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmessage
-	procGetMessage = user32.NewProc("GetMessageW")
-
-	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dispatchmessage
-	procDispatchMessage = user32.NewProc("DispatchMessageW")
-
-	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postquitmessage
-	procPostQuitMessage = user32.NewProc("PostQuitMessage")
-)
-
-const (
-	className  = "SpotOnMouseWindow"
-	windowName = "Spot on Mouse"
-
-	// WS_* window styles are a bitmask, combined with |.
-	// https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
-	//
-	// WS_OVERLAPPEDWINDOW is itself six flags OR'd together:
-	// WS_CAPTION|WS_SYSMENU|WS_THICKFRAME|WS_MINIMIZEBOX|WS_MAXIMIZEBOX.
-	wsOverlappedWindow = 0x00CF0000
-	wsVisible          = 0x10000000
-
-	// CW_USEDEFAULT is a sentinel, not flags: (int)0x80000000 is INT_MIN, a
-	// value no real screen coordinate can be. Only honoured for overlapped
-	// windows; a WS_POPUP window treats it as zero.
-	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-	cwUseDefault = 0x80000000
-
-	// CS_* class styles are a separate bitmask, used in WNDCLASSEXW.style.
-	// https://learn.microsoft.com/en-us/windows/win32/winmsg/window-class-styles
-	csVRedraw = 0x0001
-	csHRedraw = 0x0002
-
-	// WM_* messages are ordinals, compared with == (never masked with &).
-	// https://learn.microsoft.com/en-us/windows/win32/winmsg/wm-destroy
-	wmDestroy = 0x0002
-
-	wmCommand = 0x0111
-
-	wsChild = 0x40000000
-
-	// COLOR_* indexes the system colour table. WNDCLASSEXW.hbrBackground takes
-	// either a real HBRUSH or one of these +1, since 0 already means "no brush".
-	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getsyscolor
-	colorWindow = 5
-	// BUTTON is a predefined class: Windows registered it at boot, so there is
-	// no RegisterClassExW and no wndproc of our own for it.
-	// https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles
-	buttonClass = "BUTTON"
-
-	// Our own control ID. Any value we pick; it comes back in WM_COMMAND.
-	idToggleButton = 1001
-)
-
-// POINT.
-// https://learn.microsoft.com/en-us/windows/win32/api/windef/ns-windef-point
-type point struct {
-	X int32
-	Y int32
-}
-
-// MSG. The 4 bytes of padding after message are inserted by Go to match C.
-// https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-msg
-type msg struct {
-	hwnd    uintptr
-	message uint32
-	wParam  uintptr
-	lParam  uintptr
-	time    uint32
-	pt      point
-}
-
-// WNDCLASSEXW. Field order and types must match the C struct exactly.
-// https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
-type wndClassEx struct {
-	size       uint32
-	style      uint32
-	wndProc    uintptr
-	clsExtra   int32
-	wndExtra   int32
-	instance   uintptr
-	icon       uintptr
-	cursor     uintptr
-	background uintptr
-	menuName   *uint16
-	className  *uint16
-	iconSm     uintptr
-}
-
-// wndProc handles messages for our window and hands the rest back to Windows.
-// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
-func wndProc(hwnd uintptr, message uint32, wParam, lParam uintptr) uintptr {
-	switch message {
-	case wmDestroy:
-		// Closing the window ends the message loop below.
-		procPostQuitMessage.Call(0)
-		return 0
-	case wmCommand:
-		// Low word of wParam is the control ID; high word is the notification
-		// code (BN_CLICKED == 0 for buttons).
-		if uint16(wParam) == idToggleButton {
-			log.Println("button clicked")
-		}
-		return 0
-	}
-
-	ret, _, _ := procDefWindowProc.Call(hwnd, uintptr(message), wParam, lParam)
-	return ret
-}
-
 func main() {
 	// Window handles belong to the thread that created them, and so does the
 	// message loop. Without this, Go may move us to another thread and the
@@ -215,6 +85,14 @@ func main() {
 	if button == 0 {
 		log.Fatalf("CreateWindowExW(BUTTON): %v", callErr)
 	}
+	createSpot()
+
+	// Drives WM_TIMER into spotProc on the message thread we already have.
+	timer, _, callErr := procSetTimer.Call(spotHwnd, idSpotTimer, spotIntervalMs, 0)
+	if timer == 0 {
+		log.Fatalf("SetTimer: %v", callErr)
+	}
+	
 	log.Println("window created, close it to exit")
 
 	// The message pump. GetMessage blocks while the queue is empty, so this
