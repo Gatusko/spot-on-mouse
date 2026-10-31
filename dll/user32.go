@@ -1,4 +1,4 @@
-package main
+package dll
 
 // This is for OS windows
 import "syscall"
@@ -15,46 +15,47 @@ var (
 	user32 = syscall.NewLazyDLL("user32.dll")
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclassexw
-	procRegisterClassEx = user32.NewProc("RegisterClassExW")
+	ProcRegisterClassEx = user32.NewProc("RegisterClassExW")
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-	procCreateWindowEx = user32.NewProc("CreateWindowExW")
+	ProcCreateWindowEx = user32.NewProc("CreateWindowExW")
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-defwindowprocw
-	procDefWindowProc = user32.NewProc("DefWindowProcW")
+	ProcDefWindowProc = user32.NewProc("DefWindowProcW")
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmessage
-	procGetMessage = user32.NewProc("GetMessageW")
+	ProcGetMessage = user32.NewProc("GetMessageW")
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dispatchmessage
-	procDispatchMessage = user32.NewProc("DispatchMessageW")
+	ProcDispatchMessage = user32.NewProc("DispatchMessageW")
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postquitmessage
-	procPostQuitMessage = user32.NewProc("PostQuitMessage")
+	ProcPostQuitMessage = user32.NewProc("PostQuitMessage")
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getcursorpos
-	procGetCursorPos = user32.NewProc("GetCursorPos")
+	ProcGetCursorPos = user32.NewProc("GetCursorPos")
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowpos
-	procSetWindowPos = user32.NewProc("SetWindowPos")
+	ProcSetWindowPos = user32.NewProc("SetWindowPos")
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-settimer
-	procSetTimer = user32.NewProc("SetTimer")
+	ProcSetTimer = user32.NewProc("SetTimer")
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setlayeredwindowattributes
-	procSetLayeredWindowAttributes = user32.NewProc("SetLayeredWindowAttributes")
+	ProcSetLayeredWindowAttributes = user32.NewProc("SetLayeredWindowAttributes")
+
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow
-	procShowWindow = user32.NewProc("ShowWindow")
+	ProcShowWindow = user32.NewProc("ShowWindow")
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-killtimer
-	procKillTimer = user32.NewProc("KillTimer")
+	ProcKillTimer = user32.NewProc("KillTimer")
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
-	procSetWindowText = user32.NewProc("SetWindowTextW")
+	ProcSetWindowText = user32.NewProc("SetWindowTextW")
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setclasslongptrw
-	procSetClassLongPtr = user32.NewProc("SetClassLongPtrW")
+	ProcSetClassLongPtr = user32.NewProc("SetClassLongPtrW")
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-invalidaterect
-	procInvalidateRect = user32.NewProc("InvalidateRect")
+	ProcInvalidateRect = user32.NewProc("InvalidateRect")
 )

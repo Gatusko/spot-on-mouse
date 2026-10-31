@@ -5,6 +5,9 @@ import (
 	"runtime"
 	"syscall"
 	"unsafe"
+
+	"github.com/Gatusko/spot-on-mouse/constants"
+	"github.com/Gatusko/spot-on-mouse/dll"
 )
 
 func main() {
@@ -14,21 +17,21 @@ func main() {
 	// https://pkg.go.dev/runtime#LockOSThread
 	runtime.LockOSThread()
 
-	classNamePtr, err := syscall.UTF16PtrFromString(className)
+	classNamePtr, err := syscall.UTF16PtrFromString(constants.ClassName)
 	if err != nil {
 		log.Fatalf("class name: %v", err)
 	}
-	windowNamePtr, err := syscall.UTF16PtrFromString(windowName)
+	windowNamePtr, err := syscall.UTF16PtrFromString(constants.WindowName)
 	if err != nil {
 		log.Fatalf("window name: %v", err)
 	}
 
 	wc := wndClassEx{
-		style: csHRedraw | csVRedraw,
+		style: constants.CsHRedraw | constants.CsVRedraw,
 		// NewCallback turns a Go func into a C function pointer Windows can call.
 		// https://pkg.go.dev/syscall#NewCallback
 		wndProc:    syscall.NewCallback(wndProc),
-		background: colorWindow + 1, // system color brush, so the window is visible
+		background: constants.ColorWindow + 1, // system color brush, so the window is visible
 		className:  classNamePtr,
 	}
 	wc.size = uint32(unsafe.Sizeof(wc))
@@ -40,17 +43,17 @@ func main() {
 	//
 	// Win32 also reports failure through the return value; the error is only
 	// meaningful once we know the call failed.
-	atom, _, callErr := procRegisterClassEx.Call(uintptr(unsafe.Pointer(&wc)))
+	atom, _, callErr := dll.ProcRegisterClassEx.Call(uintptr(unsafe.Pointer(&wc)))
 	if atom == 0 {
 		log.Fatalf("RegisterClassExW: %v", callErr)
 	}
 
-	hwnd, _, callErr := procCreateWindowEx.Call(
+	hwnd, _, callErr := dll.ProcCreateWindowEx.Call(
 		0, // no extended styles yet
 		uintptr(unsafe.Pointer(classNamePtr)),
 		uintptr(unsafe.Pointer(windowNamePtr)),
-		wsOverlappedWindow|wsVisible,
-		cwUseDefault, cwUseDefault, // position
+		constants.WsOverlappedWindow|constants.WsVisible,
+		constants.CwUseDefault, constants.CwUseDefault, // position
 		320, 240, // size
 		0, // no parent
 		0, // no menu
@@ -61,7 +64,7 @@ func main() {
 		log.Fatalf("CreateWindowExW: %v", callErr)
 	}
 
-	buttonClassPtr, err := syscall.UTF16PtrFromString(buttonClass)
+	buttonClassPtr, err := syscall.UTF16PtrFromString(constants.ButtonClass)
 	if err != nil {
 		log.Fatalf("button class: %v", err)
 	}
@@ -70,15 +73,15 @@ func main() {
 		log.Fatalf("button text: %v", err)
 	}
 
-	button, _, callErr := procCreateWindowEx.Call(
+	button, _, callErr := dll.ProcCreateWindowEx.Call(
 		0,
 		uintptr(unsafe.Pointer(buttonClassPtr)),
 		uintptr(unsafe.Pointer(buttonTextPtr)),
-		wsChild|wsVisible,
+		constants.WsChild|constants.WsVisible,
 		20, 20, // position, relative to the parent's client area
 		120, 32, // size
-		hwnd,           // parent window
-		idToggleButton, // hMenu slot doubles as the control ID for children
+		hwnd,                     // parent window
+		constants.IdToggleButton, // hMenu slot doubles as the control ID for children
 		0,
 		0,
 	)
@@ -92,15 +95,15 @@ func main() {
 		log.Fatalf("colour button text: %v", err)
 	}
 
-	colorButton, _, callErr := procCreateWindowEx.Call(
+	colorButton, _, callErr := dll.ProcCreateWindowEx.Call(
 		0,
 		uintptr(unsafe.Pointer(buttonClassPtr)), // same predefined class
 		uintptr(unsafe.Pointer(colorTextPtr)),
-		wsChild|wsVisible,
+		constants.WsChild|constants.WsVisible,
 		20, 60, // below the toggle
 		120, 32,
 		hwnd,
-		idColorButton,
+		constants.IdColorButton,
 		0,
 		0,
 	)
@@ -116,7 +119,7 @@ func main() {
 	for {
 		// GetMessage fills m in: Win32 returns data through out-parameters, so
 		// we own the struct and hand Windows its address.
-		ret, _, callErrInner := procGetMessage.Call(uintptr(unsafe.Pointer(&m)), 0, 0, 0)
+		ret, _, callErrInner := dll.ProcGetMessage.Call(uintptr(unsafe.Pointer(&m)), 0, 0, 0)
 
 		// BOOL is a signed int32, but Call gives back an unsigned 64-bit
 		// uintptr, so -1 arrives as 0x00000000FFFFFFFF. Truncating to int32
@@ -129,6 +132,6 @@ func main() {
 		}
 
 		// This is what actually hands the message to wndProc above.
-		procDispatchMessage.Call(uintptr(unsafe.Pointer(&m)))
+		dll.ProcDispatchMessage.Call(uintptr(unsafe.Pointer(&m)))
 	}
 }

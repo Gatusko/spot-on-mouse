@@ -1,4 +1,4 @@
-package main
+package dll
 
 import "syscall"
 
@@ -7,8 +7,8 @@ var (
 	gdi32 = syscall.NewLazyDLL("gdi32.dll")
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createsolidbrush
-	procCreateSolidBrush = gdi32.NewProc("CreateSolidBrush")
+	ProcCreateSolidBrush = gdi32.NewProc("CreateSolidBrush")
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-deleteobject
-	procDeleteObject = gdi32.NewProc("DeleteObject")
+	ProcDeleteObject = gdi32.NewProc("DeleteObject")
 )

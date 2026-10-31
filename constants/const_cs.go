@@ -1,8 +1,8 @@
-package main
+package constants
 
 const (
 	// CS_* class styles are a separate bitmask, used in WNDCLASSEXW.style.
 	// https://learn.microsoft.com/en-us/windows/win32/winmsg/window-class-styles
-	csVRedraw = 0x0001
-	csHRedraw = 0x0002
+	CsVRedraw = 0x0001
+	CsHRedraw = 0x0002
 )

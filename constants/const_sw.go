@@ -1,8 +1,8 @@
-package main
+package constants
 
 const (
 	// SW_* are ShowWindow commands: ordinals, not flags.
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow
-	swHide           = 0
-	swShowNoActivate = 4
+	SwHide           = 0
+	SwShowNoActivate = 4
 )

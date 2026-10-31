@@ -1,5 +1,10 @@
 package main
 
+import (
+	"github.com/Gatusko/spot-on-mouse/constants"
+	"github.com/Gatusko/spot-on-mouse/dll"
+)
+
 // WNDCLASSEXW. Field order and types must match the C struct exactly.
 // https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
 type wndClassEx struct {
@@ -21,21 +26,21 @@ type wndClassEx struct {
 // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
 func wndProc(hwnd uintptr, message uint32, wParam, lParam uintptr) uintptr {
 	switch message {
-	case wmDestroy:
+	case constants.WmDestroy:
 		// Closing the window ends the message loop below.
-		procPostQuitMessage.Call(0)
+		dll.ProcPostQuitMessage.Call(0)
 		return 0
-	case wmCommand:
+	case constants.WmCommand:
 		// Low word of wParam is the control ID; lParam is the control's HWND.
 		switch uint16(wParam) {
-		case idToggleButton:
+		case constants.IdToggleButton:
 			setSpotEnabled(!spotEnabled, lParam)
-		case idColorButton:
+		case constants.IdColorButton:
 			pickSpotColor(hwnd)
 		}
 		return 0
 	}
 
-	ret, _, _ := procDefWindowProc.Call(hwnd, uintptr(message), wParam, lParam)
+	ret, _, _ := dll.ProcDefWindowProc.Call(hwnd, uintptr(message), wParam, lParam)
 	return ret
 }

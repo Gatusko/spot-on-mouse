@@ -1,4 +1,4 @@
-package main
+package dll
 
 import "syscall"
 
@@ -7,5 +7,5 @@ var (
 	comdlg32 = syscall.NewLazyDLL("comdlg32.dll")
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/commdlg/nf-commdlg-choosecolorw
-	procChooseColor = comdlg32.NewProc("ChooseColorW")
+	ProcChooseColor = comdlg32.NewProc("ChooseColorW")
 )
