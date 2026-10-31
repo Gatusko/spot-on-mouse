@@ -43,4 +43,18 @@ var (
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setlayeredwindowattributes
 	procSetLayeredWindowAttributes = user32.NewProc("SetLayeredWindowAttributes")
+	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow
+	procShowWindow = user32.NewProc("ShowWindow")
+
+	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-killtimer
+	procKillTimer = user32.NewProc("KillTimer")
+
+	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
+	procSetWindowText = user32.NewProc("SetWindowTextW")
+
+	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setclasslongptrw
+	procSetClassLongPtr = user32.NewProc("SetClassLongPtrW")
+
+	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-invalidaterect
+	procInvalidateRect = user32.NewProc("InvalidateRect")
 )

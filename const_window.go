@@ -21,4 +21,11 @@ const (
 
 	// Our own control ID. Any value we pick; it comes back in WM_COMMAND.
 	idToggleButton = 1001
+
+	idColorButton = 1002
+
+	// GCLP_HBRBACKGROUND is -10. Go refuses to convert a negative constant to
+	// uintptr, so write the two's-complement bit pattern instead: ^9 == -10.
+	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setclasslongptrw
+	gclpHbrBackground = ^uintptr(9)
 )

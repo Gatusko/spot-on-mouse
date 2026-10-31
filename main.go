@@ -87,12 +87,26 @@ func main() {
 	}
 	createSpot()
 
-	// Drives WM_TIMER into spotProc on the message thread we already have.
-	timer, _, callErr := procSetTimer.Call(spotHwnd, idSpotTimer, spotIntervalMs, 0)
-	if timer == 0 {
-		log.Fatalf("SetTimer: %v", callErr)
+	colorTextPtr, err := syscall.UTF16PtrFromString("Choose colour...")
+	if err != nil {
+		log.Fatalf("colour button text: %v", err)
 	}
-	
+
+	colorButton, _, callErr := procCreateWindowEx.Call(
+		0,
+		uintptr(unsafe.Pointer(buttonClassPtr)), // same predefined class
+		uintptr(unsafe.Pointer(colorTextPtr)),
+		wsChild|wsVisible,
+		20, 60, // below the toggle
+		120, 32,
+		hwnd,
+		idColorButton,
+		0,
+		0,
+	)
+	if colorButton == 0 {
+		log.Fatalf("CreateWindowExW(colour button): %v", callErr)
+	}
 	log.Println("window created, close it to exit")
 
 	// The message pump. GetMessage blocks while the queue is empty, so this

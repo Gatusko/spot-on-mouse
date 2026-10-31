@@ -1,7 +1,5 @@
 package main
 
-import "log"
-
 // WNDCLASSEXW. Field order and types must match the C struct exactly.
 // https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
 type wndClassEx struct {
@@ -28,10 +26,12 @@ func wndProc(hwnd uintptr, message uint32, wParam, lParam uintptr) uintptr {
 		procPostQuitMessage.Call(0)
 		return 0
 	case wmCommand:
-		// Low word of wParam is the control ID; high word is the notification
-		// code (BN_CLICKED == 0 for buttons).
-		if uint16(wParam) == idToggleButton {
-			log.Println("button clicked")
+		// Low word of wParam is the control ID; lParam is the control's HWND.
+		switch uint16(wParam) {
+		case idToggleButton:
+			setSpotEnabled(!spotEnabled, lParam)
+		case idColorButton:
+			pickSpotColor(hwnd)
 		}
 		return 0
 	}

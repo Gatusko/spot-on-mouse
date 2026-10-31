@@ -9,7 +9,7 @@ const (
 	// COLORREF is 0x00BBGGRR — byte order is reversed from the RGB you'd write
 	// in CSS. This is pure red.
 	// https://learn.microsoft.com/en-us/windows/win32/gdi/colorref
-	spotColor = 0x000000FF
+	spotDefaultColor = 0x000000FF
 
 	// Timer ID. Ours to choose; only has to be unique per window.
 	idSpotTimer = 1
