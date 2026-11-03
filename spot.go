@@ -24,6 +24,12 @@ var (
 	// ChooseColorW needs a 16-entry array for the user's custom colours and
 	// FAILS if the pointer is nil. Package-level so picks survive between opens.
 	customColors [16]uint32
+
+	// Diameter in pixels, driven by the 1..10 slider.
+	spotSize = int32(constants.SpotDefaultSize)
+
+	// Circle is the default shape.
+	spotCircle = true
 )
 
 // createSpot registers the spot's own window class and creates its window.
@@ -58,7 +64,7 @@ func createSpot() {
 		0,                 // no title — it has no caption to put one in
 		constants.WsPopup, // start hidden
 		200, 200,          // fixed screen position for now, so we can find it
-		constants.SpotSize, constants.SpotSize,
+		uintptr(spotSize), uintptr(spotSize),
 		0, // no parent
 		0, // no menu
 		0, // hInstance
@@ -77,6 +83,7 @@ func createSpot() {
 	if ret == 0 {
 		log.Fatalf("SetLayeredWindowAttributes: %v", callErr)
 	}
+	applySpotShape()
 }
 
 // spotProc: the background brush does the painting, the timer does the moving.
@@ -104,10 +111,11 @@ func moveSpotToCursor(hwnd uintptr) {
 	dll.ProcSetWindowPos.Call(
 		hwnd,
 		0, // hWndInsertAfter, ignored because of SWP_NOZORDER
-		uintptr(pt.X-constants.SpotSize/2),
-		uintptr(pt.Y-constants.SpotSize/2),
-		0, 0, // width/height, ignored because of SWP_NOSIZE
-		constants.SwpNoSize|constants.SwpNoZOrder|constants.SwpNoActivate,
+		uintptr(pt.X-spotSize/2),
+		uintptr(pt.Y-spotSize/2),
+		uintptr(spotSize),
+		uintptr(spotSize),
+		constants.SwpNoZOrder|constants.SwpNoActivate,
 	)
 }
 
@@ -185,4 +193,45 @@ func pickSpotColor(owner uintptr) {
 	}
 
 	setSpotColor(cc.result)
+}
+
+// setSpotSizePx sets the spot diameter in pixels and resizes it in place.
+func setSpotSizePx(px int32) {
+	if px < constants.SpotMinSize {
+		px = constants.SpotMinSize
+	}
+	if px > constants.SpotMaxSize {
+		px = constants.SpotMaxSize
+	}
+
+	spotSize = px
+	moveSpotToCursor(spotHwnd) // repositions and resizes in one call
+	applySpotShape()           // the region must be rebuilt at the new size
+}
+
+// setSpotShape switches between a circular and a square spot.
+func setSpotShape(circle bool) {
+	spotCircle = circle
+	applySpotShape()
+}
+
+// applySpotShape clips the spot window to a circle, or drops the clip for a
+// square. A region is in window coordinates and does NOT scale with the
+// window, so this has to run again after every size change.
+func applySpotShape() {
+	if !spotCircle {
+		// A nil region removes any existing clip: back to a rectangle.
+		dll.ProcSetWindowRgn.Call(spotHwnd, 0, 1)
+		return
+	}
+
+	rgn, _, callErr := dll.ProcCreateEllipticRgn.Call(0, 0, uintptr(spotSize), uintptr(spotSize))
+	if rgn == 0 {
+		log.Printf("CreateEllipticRgn: %v", callErr)
+		return
+	}
+
+	// On success the system takes ownership of the region — do NOT delete it,
+	// and do not reuse the handle. Windows frees the previous one itself.
+	dll.ProcSetWindowRgn.Call(spotHwnd, rgn, 1)
 }

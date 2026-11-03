@@ -58,4 +58,10 @@ var (
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-invalidaterect
 	ProcInvalidateRect = user32.NewProc("InvalidateRect")
+
+	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessagew
+	ProcSendMessage = user32.NewProc("SendMessageW")
+
+	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowrgn
+	ProcSetWindowRgn = user32.NewProc("SetWindowRgn")
 )

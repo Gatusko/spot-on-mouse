@@ -37,6 +37,17 @@ func wndProc(hwnd uintptr, message uint32, wParam, lParam uintptr) uintptr {
 			setSpotEnabled(!spotEnabled, lParam)
 		case constants.IdColorButton:
 			pickSpotColor(hwnd)
+		case constants.IdShapeCircle:
+			setSpotShape(true)
+		case constants.IdShapeSquare:
+			setSpotShape(false)
+		}
+		return 0
+	case constants.WmHScroll:
+		// lParam is the sending trackbar. A real scrollbar sends 0 here, which
+		// is how you tell the two apart.
+		if lParam != 0 {
+			onSliderChange(lParam)
 		}
 		return 0
 	}

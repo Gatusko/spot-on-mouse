@@ -3,8 +3,11 @@ package constants
 const (
 	SpotClassName = "SpotOnMouseSpot"
 
-	// Diameter in pixels.
-	SpotSize = 40
+	// The slider works directly in pixels: one unit per pixel, so it moves
+	// smoothly instead of snapping to ten steps.
+	SpotMinSize     = 8
+	SpotMaxSize     = 120
+	SpotDefaultSize = 36
 
 	// COLORREF is 0x00BBGGRR — byte order is reversed from the RGB you'd write
 	// in CSS. This is pure red.

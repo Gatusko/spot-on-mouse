@@ -16,6 +16,7 @@ func main() {
 	// window stops responding.
 	// https://pkg.go.dev/runtime#LockOSThread
 	runtime.LockOSThread()
+	initCommonControls()
 
 	classNamePtr, err := syscall.UTF16PtrFromString(constants.ClassName)
 	if err != nil {
@@ -54,7 +55,7 @@ func main() {
 		uintptr(unsafe.Pointer(windowNamePtr)),
 		constants.WsOverlappedWindow|constants.WsVisible,
 		constants.CwUseDefault, constants.CwUseDefault, // position
-		320, 240, // size
+		320, 300, // size
 		0, // no parent
 		0, // no menu
 		0, // hInstance, unused for a single-exe app
@@ -88,6 +89,8 @@ func main() {
 	if button == 0 {
 		log.Fatalf("CreateWindowExW(BUTTON): %v", callErr)
 	}
+	createSizeSlider(hwnd)
+	createShapeRadios(hwnd)
 	createSpot()
 
 	colorTextPtr, err := syscall.UTF16PtrFromString("Choose colour...")

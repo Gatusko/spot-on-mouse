@@ -11,4 +11,7 @@ var (
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-deleteobject
 	ProcDeleteObject = gdi32.NewProc("DeleteObject")
+
+	// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createellipticrgn
+	ProcCreateEllipticRgn = gdi32.NewProc("CreateEllipticRgn")
 )
