@@ -14,12 +14,6 @@ const (
 	// https://learn.microsoft.com/en-us/windows/win32/gdi/colorref
 	SpotDefaultColor = 0x000000FF
 
-	// Timer ID. Ours to choose; only has to be unique per window.
-	IdSpotTimer = 1
-
-	// Milliseconds between position updates — roughly 60 per second.
-	SpotIntervalMs = 16
-
 	// 0 = invisible, 255 = opaque.
 	SpotAlpha = 160
 

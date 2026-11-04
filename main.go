@@ -16,6 +16,13 @@ func main() {
 	// window stops responding.
 	// https://pkg.go.dev/runtime#LockOSThread
 	runtime.LockOSThread()
+
+	// Must run before the first window is created. Without it Windows
+	// virtualises our coordinates while the mouse hook reports physical
+	// pixels, and the two disagree by the display's scale factor.
+	// Error ignored: needs Windows 10 1703+, older builds just stay unaware.
+	dll.ProcSetProcessDpiAwarenessContext.Call(constants.DpiPerMonitorAwareV2)
+
 	initCommonControls()
 
 	classNamePtr, err := syscall.UTF16PtrFromString(constants.ClassName)
@@ -53,9 +60,9 @@ func main() {
 		0, // no extended styles yet
 		uintptr(unsafe.Pointer(classNamePtr)),
 		uintptr(unsafe.Pointer(windowNamePtr)),
-		constants.WsOverlappedWindow|constants.WsVisible,
-		constants.CwUseDefault, constants.CwUseDefault, // position
-		320, 300, // size
+		constants.WsFixedWindow, // hidden until laid out, so there is no flash
+		constants.CwUseDefault, constants.CwUseDefault,
+		constants.WindowWidth, constants.WindowHeight, // resized below, once DPI is known
 		0, // no parent
 		0, // no menu
 		0, // hInstance, unused for a single-exe app
@@ -64,6 +71,19 @@ func main() {
 	if hwnd == 0 {
 		log.Fatalf("CreateWindowExW: %v", callErr)
 	}
+
+	// The window has to exist before its monitor's DPI can be read, so it was
+	// created hidden at the design size and is resized before anyone sees it.
+	initUIScale(hwnd)
+
+	dll.ProcSetWindowPos.Call(
+		hwnd,
+		0,
+		0, 0, // position untouched
+		scaled(constants.WindowWidth),
+		scaled(constants.WindowHeight),
+		constants.SwpNoMove|constants.SwpNoZOrder|constants.SwpNoActivate,
+	)
 
 	buttonClassPtr, err := syscall.UTF16PtrFromString(constants.ButtonClass)
 	if err != nil {
@@ -79,8 +99,8 @@ func main() {
 		uintptr(unsafe.Pointer(buttonClassPtr)),
 		uintptr(unsafe.Pointer(buttonTextPtr)),
 		constants.WsChild|constants.WsVisible,
-		20, 20, // position, relative to the parent's client area
-		120, 32, // size
+		scaled(constants.Margin), scaled(constants.ToggleButtonY), // position, relative to the parent's client area
+		scaled(constants.ButtonWidth), scaled(constants.ButtonHeight), // size
 		hwnd,                     // parent window
 		constants.IdToggleButton, // hMenu slot doubles as the control ID for children
 		0,
@@ -103,8 +123,8 @@ func main() {
 		uintptr(unsafe.Pointer(buttonClassPtr)), // same predefined class
 		uintptr(unsafe.Pointer(colorTextPtr)),
 		constants.WsChild|constants.WsVisible,
-		20, 60, // below the toggle
-		120, 32,
+		scaled(constants.Margin), scaled(constants.ColorButtonY), // below the toggle
+		scaled(constants.ButtonWidth), scaled(constants.ButtonHeight),
 		hwnd,
 		constants.IdColorButton,
 		0,
@@ -113,6 +133,9 @@ func main() {
 	if colorButton == 0 {
 		log.Fatalf("CreateWindowExW(colour button): %v", callErr)
 	}
+	// Created hidden so the DPI could be read and everything laid out first;
+	// this is the first moment anything appears on screen.
+	dll.ProcShowWindow.Call(hwnd, constants.SwShow)
 	log.Println("window created, close it to exit")
 
 	// The message pump. GetMessage blocks while the queue is empty, so this

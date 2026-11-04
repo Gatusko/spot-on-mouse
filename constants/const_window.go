@@ -28,4 +28,9 @@ const (
 	// uintptr, so write the two's-complement bit pattern instead: ^9 == -10.
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setclasslongptrw
 	GclpHbrBackground = ^uintptr(9)
+
+	// DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 is -4. Go will not convert a
+	// negative constant to uintptr, so write the two's-complement pattern: ^3 == -4.
+	// https://learn.microsoft.com/en-us/windows/win32/hidpi/dpi-awareness-context
+	DpiPerMonitorAwareV2 = ^uintptr(3)
 )

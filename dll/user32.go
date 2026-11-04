@@ -38,17 +38,11 @@ var (
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowpos
 	ProcSetWindowPos = user32.NewProc("SetWindowPos")
 
-	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-settimer
-	ProcSetTimer = user32.NewProc("SetTimer")
-
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setlayeredwindowattributes
 	ProcSetLayeredWindowAttributes = user32.NewProc("SetLayeredWindowAttributes")
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow
 	ProcShowWindow = user32.NewProc("ShowWindow")
-
-	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-killtimer
-	ProcKillTimer = user32.NewProc("KillTimer")
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
 	ProcSetWindowText = user32.NewProc("SetWindowTextW")
@@ -64,4 +58,19 @@ var (
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowrgn
 	ProcSetWindowRgn = user32.NewProc("SetWindowRgn")
+
+	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowshookexw
+	ProcSetWindowsHookEx = user32.NewProc("SetWindowsHookExW")
+
+	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-unhookwindowshookex
+	ProcUnhookWindowsHookEx = user32.NewProc("UnhookWindowsHookEx")
+
+	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-callnexthookex
+	ProcCallNextHookEx = user32.NewProc("CallNextHookEx")
+
+	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setprocessdpiawarenesscontext
+	ProcSetProcessDpiAwarenessContext = user32.NewProc("SetProcessDpiAwarenessContext")
+
+	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getdpiforwindow
+	ProcGetDpiForWindow = user32.NewProc("GetDpiForWindow")
 )

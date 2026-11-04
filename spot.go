@@ -86,37 +86,36 @@ func createSpot() {
 	applySpotShape()
 }
 
-// spotProc: the background brush does the painting, the timer does the moving.
+// spotProc: the background brush paints it, the mouse hook moves it.
 func spotProc(hwnd uintptr, message uint32, wParam, lParam uintptr) uintptr {
-	switch message {
-	case constants.WmTimer:
-		moveSpotToCursor(hwnd)
-		return 0
-	}
-
 	ret, _, _ := dll.ProcDefWindowProc.Call(hwnd, uintptr(message), wParam, lParam)
 	return ret
 }
 
-// moveSpotToCursor centres the spot window on the mouse pointer.
-func moveSpotToCursor(hwnd uintptr) {
-	// Another out-parameter: we own the POINT, Windows fills it in.
+// moveSpotTo centres the spot on pt and resizes it to the current diameter.
+// The hook already carries the position, so there is no GetCursorPos here.
+func moveSpotTo(pt point) {
+	dll.ProcSetWindowPos.Call(
+		spotHwnd,
+		constants.HwndTopmost, // re-assert the topmost band on every move
+		uintptr(pt.X-spotSize/2),
+		uintptr(pt.Y-spotSize/2),
+		uintptr(spotSize),
+		uintptr(spotSize),
+		constants.SwpNoActivate,
+	)
+}
+
+// moveSpotToCursor looks the position up itself. For the cases that are not
+// mouse movement: enabling the spot, or resizing it.
+func moveSpotToCursor() {
 	var pt point
 	ret, _, callErr := dll.ProcGetCursorPos.Call(uintptr(unsafe.Pointer(&pt)))
 	if ret == 0 {
 		log.Printf("GetCursorPos: %v", callErr)
 		return
 	}
-
-	dll.ProcSetWindowPos.Call(
-		hwnd,
-		0, // hWndInsertAfter, ignored because of SWP_NOZORDER
-		uintptr(pt.X-spotSize/2),
-		uintptr(pt.Y-spotSize/2),
-		uintptr(spotSize),
-		uintptr(spotSize),
-		constants.SwpNoZOrder|constants.SwpNoActivate,
-	)
+	moveSpotTo(pt)
 }
 
 // setSpotEnabled shows or hides the spot and starts or stops its timer.
@@ -125,21 +124,20 @@ func setSpotEnabled(on bool, buttonHwnd uintptr) {
 	spotEnabled = on
 
 	if on {
-		timer, _, callErr := dll.ProcSetTimer.Call(spotHwnd, constants.IdSpotTimer, constants.SpotIntervalMs, 0)
-		if timer == 0 {
-			log.Printf("SetTimer: %v", callErr)
+		if !installMouseHook() {
+			spotEnabled = false
 			return
 		}
 
 		// Jump to the cursor before showing, or the spot flashes at wherever
 		// it was left last time.
-		moveSpotToCursor(spotHwnd)
+		moveSpotToCursor()
 		dll.ProcShowWindow.Call(spotHwnd, constants.SwShowNoActivate)
 		setWindowText(buttonHwnd, "Disable spot")
 		return
 	}
 
-	dll.ProcKillTimer.Call(spotHwnd, constants.IdSpotTimer)
+	removeMouseHook()
 	dll.ProcShowWindow.Call(spotHwnd, constants.SwHide)
 	setWindowText(buttonHwnd, "Enable spot")
 }
@@ -205,8 +203,8 @@ func setSpotSizePx(px int32) {
 	}
 
 	spotSize = px
-	moveSpotToCursor(spotHwnd) // repositions and resizes in one call
-	applySpotShape()           // the region must be rebuilt at the new size
+	moveSpotToCursor() // repositions and resizes in one call
+	applySpotShape()   // the region must be rebuilt at the new size
 }
 
 // setSpotShape switches between a circular and a square spot.

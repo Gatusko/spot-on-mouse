@@ -40,8 +40,8 @@ func createSizeSlider(parent uintptr) uintptr {
 		uintptr(unsafe.Pointer(classPtr)),
 		0, // no text
 		constants.WsChild|constants.WsVisible|constants.TbsNoTicks|constants.TbsTooltips,
-		20, 100,
-		200, 40,
+		scaled(constants.Margin), scaled(constants.SliderY),
+		scaled(constants.SliderWidth), scaled(constants.SliderHeight),
 		parent,
 		constants.IdSizeSlider,
 		0,
