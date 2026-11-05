@@ -33,4 +33,13 @@ const (
 	// negative constant to uintptr, so write the two's-complement pattern: ^3 == -4.
 	// https://learn.microsoft.com/en-us/windows/win32/hidpi/dpi-awareness-context
 	DpiPerMonitorAwareV2 = ^uintptr(3)
+
+	// STATIC is the predefined class for text labels. Default style SS_LEFT
+	// is 0, so WS_CHILD|WS_VISIBLE alone gives left-aligned text.
+	// https://learn.microsoft.com/en-us/windows/win32/controls/static-controls
+	StaticClass = "STATIC"
+
+	// TRANSPARENT background mode: text is drawn without filling behind it.
+	// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-setbkmode
+	BkTransparent = 1
 )

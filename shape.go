@@ -11,6 +11,7 @@ import (
 
 // createShapeRadios builds the circle/square pair and ticks the default.
 func createShapeRadios(parent uintptr) {
+	newLabel(parent, "Shape", constants.ShapeLabelY)
 	circle := newRadio(parent, "Circle", constants.IdShapeCircle, constants.CircleRadioY, constants.WsGroup)
 	newRadio(parent, "Square", constants.IdShapeSquare, constants.SquareRadioY, 0)
 

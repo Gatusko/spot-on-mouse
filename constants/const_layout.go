@@ -13,12 +13,17 @@ const (
 	ToggleButtonY = 20
 	ColorButtonY  = 60
 
-	SliderY      = 100
+	LabelWidth  = 100
+	LabelHeight = 20
+
+	SizeLabelY   = 100
+	SliderY      = 120
 	SliderWidth  = 200
 	SliderHeight = 40
 
+	ShapeLabelY  = 165
 	RadioWidth   = 100
 	RadioHeight  = 24
-	CircleRadioY = 150
-	SquareRadioY = 175
+	CircleRadioY = 185
+	SquareRadioY = 210
 )

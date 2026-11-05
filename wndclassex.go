@@ -50,6 +50,21 @@ func wndProc(hwnd uintptr, message uint32, wParam, lParam uintptr) uintptr {
 			onSliderChange(lParam)
 		}
 		return 0
+	case constants.WmDpiChanged:
+		// Deliberately ignore the suggested rect: the panel keeps the pixel
+		// size it was laid out at on startup, on every monitor.
+		return 0
+	case constants.WmCtlColorStatic:
+		// Radios and the trackbar ask too; leave them to DefWindowProc.
+		if !isLabel(lParam) {
+			break
+		}
+		// Labels get the window's own white instead of the default grey,
+		// with the text drawn transparent. The brush is system-owned: never
+		// DeleteObject it.
+		dll.ProcSetBkMode.Call(wParam, constants.BkTransparent)
+		brush, _, _ := dll.ProcGetSysColorBrush.Call(constants.ColorWindow)
+		return brush
 	}
 
 	ret, _, _ := dll.ProcDefWindowProc.Call(hwnd, uintptr(message), wParam, lParam)

@@ -14,4 +14,7 @@ var (
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createellipticrgn
 	ProcCreateEllipticRgn = gdi32.NewProc("CreateEllipticRgn")
+
+	// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-setbkmode
+	ProcSetBkMode = gdi32.NewProc("SetBkMode")
 )

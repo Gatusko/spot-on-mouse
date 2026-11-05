@@ -73,4 +73,7 @@ var (
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getdpiforwindow
 	ProcGetDpiForWindow = user32.NewProc("GetDpiForWindow")
+
+	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getsyscolorbrush
+	ProcGetSysColorBrush = user32.NewProc("GetSysColorBrush")
 )

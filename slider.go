@@ -30,6 +30,8 @@ func initCommonControls() {
 
 // createSizeSlider builds the 1..10 trackbar that sets the spot diameter.
 func createSizeSlider(parent uintptr) uintptr {
+	newLabel(parent, "Size", constants.SizeLabelY)
+
 	classPtr, err := syscall.UTF16PtrFromString(constants.TrackbarClass)
 	if err != nil {
 		log.Fatalf("trackbar class: %v", err)
