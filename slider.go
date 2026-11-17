@@ -61,7 +61,7 @@ func createSizeSlider(parent uintptr) uintptr {
 		1, // redraw
 		uintptr(constants.SpotMinSize)|uintptr(constants.SpotMaxSize)<<16,
 	)
-	dll.ProcSendMessage.Call(slider, constants.TbmSetPos, 1, constants.SpotDefaultSize)
+	dll.ProcSendMessage.Call(slider, constants.TbmSetPos, 1, uintptr(spotSize))
 
 	// Clicking the channel jumps by 8px rather than a fifth of the range.
 	dll.ProcSendMessage.Call(slider, constants.TbmSetPageSize, 0, 8)

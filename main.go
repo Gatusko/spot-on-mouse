@@ -24,6 +24,7 @@ func main() {
 	dll.ProcSetProcessDpiAwarenessContext.Call(constants.DpiPerMonitorAwareV2)
 
 	initCommonControls()
+	loadConfig() // before any window: createSpot and the controls read its values
 
 	classNamePtr, err := syscall.UTF16PtrFromString(constants.ClassName)
 	if err != nil {
@@ -112,6 +113,7 @@ func main() {
 	createSizeSlider(hwnd)
 	createShapeRadios(hwnd)
 	createSpot()
+	setSpotEnabled(cfg.Enabled, button)
 
 	colorTextPtr, err := syscall.UTF16PtrFromString("Choose colour...")
 	if err != nil {

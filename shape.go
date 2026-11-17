@@ -12,12 +12,17 @@ import (
 // createShapeRadios builds the circle/square pair and ticks the default.
 func createShapeRadios(parent uintptr) {
 	newLabel(parent, "Shape", constants.ShapeLabelY)
-	circle := newRadio(parent, "Circle", constants.IdShapeCircle, constants.CircleRadioY, constants.WsGroup)
-	newRadio(parent, "Square", constants.IdShapeSquare, constants.SquareRadioY, 0)
+	circle := newRadio(parent, "Circle", constants.IdShapeCircle, constants.CircleRadioY,
+		constants.WsGroup)
+	square := newRadio(parent, "Square", constants.IdShapeSquare, constants.SquareRadioY, 0)
 
 	// BS_AUTORADIOBUTTON only manages the tick once the user clicks, so the
 	// initial state has to be set by hand to match spotCircle.
-	dll.ProcSendMessage.Call(circle, constants.BmSetCheck, constants.BstChecked, 0)
+	checked := circle
+	if !spotCircle {
+		checked = square
+	}
+	dll.ProcSendMessage.Call(checked, constants.BmSetCheck, constants.BstChecked, 0)
 }
 
 // newRadio creates one auto-radio button. Same predefined BUTTON class as the

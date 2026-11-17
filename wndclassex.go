@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/Gatusko/spot-on-mouse/constants"
 	"github.com/Gatusko/spot-on-mouse/dll"
 )
@@ -35,12 +37,19 @@ func wndProc(hwnd uintptr, message uint32, wParam, lParam uintptr) uintptr {
 		switch uint16(wParam) {
 		case constants.IdToggleButton:
 			setSpotEnabled(!spotEnabled, lParam)
+			cfg.Enabled = spotEnabled // read after: the hook install may have failed
+			if err := saveConfig(); err != nil {
+				log.Printf("config save: %v", err)
+			}
 		case constants.IdColorButton:
 			pickSpotColor(hwnd)
+			saveCurrent() // on Cancel this rewrites the same values: harmless
 		case constants.IdShapeCircle:
 			setSpotShape(true)
+			saveCurrent()
 		case constants.IdShapeSquare:
 			setSpotShape(false)
+			saveCurrent()
 		}
 		return 0
 	case constants.WmHScroll:
@@ -48,6 +57,10 @@ func wndProc(hwnd uintptr, message uint32, wParam, lParam uintptr) uintptr {
 		// is how you tell the two apart.
 		if lParam != 0 {
 			onSliderChange(lParam)
+			// Skip the per-pixel drag updates; the final position still saves.
+			if uint16(wParam) != constants.TbThumbTrack {
+				saveCurrent()
+			}
 		}
 		return 0
 	case constants.WmDpiChanged:

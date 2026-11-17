@@ -30,6 +30,9 @@ var (
 
 	// Circle is the default shape.
 	spotCircle = true
+
+	// Created ONCE, like mouseProcCallback: NewCallback slots are never freed.
+	ccHookCallback = syscall.NewCallback(ccHookProc)
 )
 
 // createSpot registers the spot's own window class and creates its window.
@@ -176,21 +179,59 @@ func setSpotColor(color uint32) {
 
 // pickSpotColor opens the standard Windows colour dialog.
 func pickSpotColor(owner uintptr) {
+	original := spotColor
 	cc := chooseColor{
 		owner:      owner,
 		result:     spotColor,
 		custColors: &customColors[0],
-		flags:      constants.CcRgbInit | constants.CcFullOpen,
+		flags:      constants.CcRgbInit | constants.CcFullOpen | constants.CcEnableHook,
+		hook:       ccHookCallback,
 	}
 	cc.structSize = uint32(unsafe.Sizeof(cc))
 
 	ret, _, _ := dll.ProcChooseColor.Call(uintptr(unsafe.Pointer(&cc)))
 	if ret == 0 {
 		// Also what Cancel returns, which is not an error worth logging.
+		if spotColor != original {
+			setSpotColor(original)
+		}
 		return
 	}
 
 	setSpotColor(cc.result)
+}
+
+// ccHookProc sees the colour dialog's messages before the dialog does.
+// Swatches, the spectrum, the Lum bar and typing all end up rewriting the
+// Red/Green/Blue boxes, so watching those three is enough.
+// https://learn.microsoft.com/en-us/windows/win32/api/commdlg/nc-commdlg-lpcchookproc
+func ccHookProc(hdlg uintptr, message uint32, wParam, lParam uintptr) uintptr {
+	// Low word of wParam is the control ID, high word the notification code.
+	if message == constants.WmCommand && uint16(wParam>>16) == constants.EnChange {
+		switch uint16(wParam) {
+		case constants.ColorRed, constants.ColorGreen, constants.ColorBlue:
+			if c, ok := dialogColor(hdlg); ok && c != spotColor {
+				setSpotColor(c)
+			}
+		}
+	}
+	// 0 = let the dialog's own procedure handle the message as usual.
+	return 0
+}
+
+// dialogColor reads the three edit boxes into a COLORREF (0x00BBGGRR).
+// ok is false while a box is empty, e.g. mid-way through typing.
+func dialogColor(hdlg uintptr) (uint32, bool) {
+	var rgb [3]uint32
+	for i, id := range [3]uintptr{constants.ColorRed, constants.ColorGreen, constants.ColorBlue} {
+		var translated int32 // BOOL out-param: non-zero if the text was a number
+		v, _, _ := dll.ProcGetDlgItemInt.Call(hdlg, id, uintptr(unsafe.Pointer(&translated)), 0)
+		if translated == 0 {
+			return 0, false
+		}
+		rgb[i] = uint32(min(v, 255))
+	}
+	return rgb[0] | rgb[1]<<8 | rgb[2]<<16, true
 }
 
 // setSpotSizePx sets the spot diameter in pixels and resizes it in place.

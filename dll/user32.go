@@ -76,4 +76,7 @@ var (
 
 	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getsyscolorbrush
 	ProcGetSysColorBrush = user32.NewProc("GetSysColorBrush")
+
+	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getdlgitemint
+	ProcGetDlgItemInt = user32.NewProc("GetDlgItemInt")
 )

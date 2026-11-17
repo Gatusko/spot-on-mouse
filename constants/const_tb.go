@@ -21,5 +21,10 @@ const (
 	TbmSetPos   = WmUser + 5
 	TbmSetRange = WmUser + 6
 
+	// WM_HSCROLL notification codes, in the low word of wParam. THUMBTRACK
+	// fires for every pixel while dragging; the drag ends with THUMBPOSITION.
+	// https://learn.microsoft.com/en-us/windows/win32/controls/wm-hscroll--trackbar-
+	TbThumbTrack = 5
+
 	IdSizeSlider = 1003
 )
