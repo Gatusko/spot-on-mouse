@@ -1,0 +1,30 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write # creating a release writes to the repo
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Go version comes from go.mod, so CI and local builds match.
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      # No cgo, so a Linux runner cross-compiles the Windows binary.
+      - name: Build
+        run: make release
+
+      # GITHUB_REF_NAME is the tag that triggered the run, e.g. v1.0.0.
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" spot-on-mouse.exe --title "$GITHUB_REF_NAME" --generate-notes
