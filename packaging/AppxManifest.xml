@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Describes the app to Windows and the Store. The exe itself is unchanged.
+     https://learn.microsoft.com/en-us/uwp/schemas/appxpackage/uapmanifestschema/schema-root -->
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap rescap">
+
+  <!-- Must match Partner Center > Product identity exactly. Version has four
+       parts and the Store requires the last one to be 0. -->
+  <Identity
+    Name="10532Gatusko.SpotOnMouse"
+    Publisher="CN=FB389A9B-7990-4783-BE7B-A694762D5ED4"
+    Version="1.0.1.0"
+    ProcessorArchitecture="x64" />
+
+  <Properties>
+    <DisplayName>Spot On Mouse</DisplayName>
+    <PublisherDisplayName>Gatusko</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+
+  <!-- 17763 = Windows 10 1809, the first release with full MSIX support. -->
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="en-us" />
+  </Resources>
+
+  <Applications>
+    <!-- FullTrustApplication = a classic Win32 exe, not a sandboxed UWP app. -->
+    <Application Id="SpotOnMouse" Executable="spot-on-mouse.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="Spot On Mouse"
+        Description="A translucent spot that follows the mouse cursor"
+        BackgroundColor="transparent"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png" />
+    </Application>
+  </Applications>
+
+  <!-- Needed for the WH_MOUSE_LL hook; justified in the certification notes. -->
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>

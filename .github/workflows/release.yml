@@ -20,11 +20,44 @@ jobs:
           go-version-file: go.mod
 
       # No cgo, so a Linux runner cross-compiles the Windows binary.
-      - name: Build
-        run: make release
+      # ${GITHUB_REF_NAME#v} strips the leading v: v1.0.2 -> 1.0.2.
+      - name: Build exe and stage MSIX
+        run: make msix-stage VERSION="${GITHUB_REF_NAME#v}"
 
-      # GITHUB_REF_NAME is the tag that triggered the run, e.g. v1.0.0.
+      # Hands the files to the Windows job; jobs share no disk.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: |
+            spot-on-mouse.exe
+            dist/msix
+
+  package:
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: build
+
+      # makeappx ships with the Windows SDK on the runner; pick the newest one.
+      - name: Pack MSIX
+        shell: pwsh
+        run: |
+          $version = $env:GITHUB_REF_NAME.TrimStart('v')
+          $makeappx = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin\*\x64\makeappx.exe" |
+            Sort-Object { [version]$_.Directory.Parent.Name } | Select-Object -Last 1
+          & $makeappx.FullName pack /d dist\msix /p "spot-on-mouse-$version.msix" /o
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      # No checkout in this job, so gh needs --repo to know where to release.
       - name: Release
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" spot-on-mouse.exe --title "$GITHUB_REF_NAME" --generate-notes
+        run: >
+          gh release create "$GITHUB_REF_NAME"
+          spot-on-mouse.exe spot-on-mouse-*.msix
+          --repo "$GITHUB_REPOSITORY"
+          --title "$GITHUB_REF_NAME"
+          --generate-notes
